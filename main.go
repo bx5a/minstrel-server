@@ -9,11 +9,15 @@ import (
 )
 
 func main() {
-	minstrel := &Minstrel{searchEngine: search.YoutubeEngine{}}
+	var engines map[string]search.EngineInterface
+	engines = make(map[string]search.EngineInterface)
+
+	engines["youtube"] = search.YoutubeEngine{}
+	minstrel := &Minstrel{searchEngines: engines}
 	r := mux.NewRouter()
 
-	r.Methods("GET").Path("/v1/search/{q}").HandlerFunc(minstrel.GetSearch)
-	r.Methods("GET").Path("/v1/detail/youtube/{ids}").HandlerFunc(minstrel.GetDetail)
+	r.Methods("GET").Path("/v1/search/{service}/{q}").HandlerFunc(minstrel.GetSearch)
+	r.Methods("GET").Path("/v1/detail/{service}/{ids}").HandlerFunc(minstrel.GetDetail)
 
 	log.Fatal(http.ListenAndServe(":8080", r))
 }
