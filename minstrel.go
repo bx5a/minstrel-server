@@ -2,69 +2,54 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"log"
 	"net/http"
 	"strings"
 
 	"github.com/bx5a/minstrel-server/search"
-	"github.com/gorilla/mux"
+	"github.com/bx5a/minstrel-server/track"
 )
 
 /*
 Minstrel is the main app
 */
 type Minstrel struct {
-	searchEngines map[string]search.EngineInterface
+	searchEngine search.EngineInterface
 }
 
-// GetEngine retreive an engine for its id
-func (minstrel *Minstrel) GetEngine(id string) (search.EngineInterface, error) {
-	engine, success := minstrel.searchEngines[id]
-	if !success {
-		return nil, errors.New("Can't find requested engine")
+// GetTrackIDs search for tracks
+func (minstrel *Minstrel) GetTrackIDs(writer http.ResponseWriter, r *http.Request) {
+	q := r.URL.Query().Get("q")
+	if len(q) != 0 {
+		minstrel.Search(writer, q)
+		return
 	}
-	return engine, nil
+	http.Error(writer, "Invalid request", http.StatusBadRequest)
 }
 
-// GetSearch handle the Get method on the search url
-func (minstrel *Minstrel) GetSearch(writer http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	q := vars["q"]
-	if len(q) == 0 {
-		http.Error(writer, "Invalid query", http.StatusBadRequest)
+// GetTracks search for track details for a given list of TrackID
+func (minstrel *Minstrel) GetTracks(writer http.ResponseWriter, r *http.Request) {
+	ids := r.URL.Query().Get("ids")
+	if len(ids) != 0 {
+		decoder := json.NewDecoder(strings.NewReader(ids))
+		tracks := []track.ID{}
+		for {
+			var id track.ID
+			err := decoder.Decode(&id)
+			if err != nil {
+				break
+			}
+			tracks = append(tracks, id)
+		}
+		minstrel.Detail(writer, tracks)
 		return
 	}
-	engineID := vars["service"]
-	engine, err := minstrel.GetEngine(engineID)
-	if err != nil {
-		http.Error(writer, "Couldn't find requested service", http.StatusBadRequest)
-		return
-	}
-	minstrel.Search(writer, engine, q)
-}
-
-// GetDetail handle the Get method on the detail url
-func (minstrel *Minstrel) GetDetail(writer http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	log.Println(vars)
-	ids := vars["ids"]
-	if len(ids) == 0 {
-		http.Error(writer, "Invalid query", http.StatusBadRequest)
-		return
-	}
-	engineID := vars["service"]
-	engine, err := minstrel.GetEngine(engineID)
-	if err != nil {
-		http.Error(writer, "Couldn't find requested service", http.StatusBadRequest)
-		return
-	}
-	minstrel.Detail(writer, engine, strings.Split(ids, ","))
+	http.Error(writer, "Invalid request", http.StatusBadRequest)
 }
 
 // Search writes a json array of TrackID to the writer
-func (minstrel *Minstrel) Search(writer http.ResponseWriter, engine search.EngineInterface, q string) {
-	ids, err := search.Search(engine, q, "FR")
+func (minstrel *Minstrel) Search(writer http.ResponseWriter, q string) {
+	ids, err := search.Search(minstrel.searchEngine, q, "FR")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -78,8 +63,8 @@ func (minstrel *Minstrel) Search(writer http.ResponseWriter, engine search.Engin
 }
 
 // Detail writes a json array of Track to the writer using the give ids
-func (minstrel *Minstrel) Detail(writer http.ResponseWriter, engine search.EngineInterface, ids []string) {
-	tracks, err := search.Detail(engine, ids)
+func (minstrel *Minstrel) Detail(writer http.ResponseWriter, ids []track.ID) {
+	tracks, err := search.Detail(minstrel.searchEngine, ids)
 	if err != nil {
 		log.Fatal(err)
 	}

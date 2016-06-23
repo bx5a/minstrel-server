@@ -1,6 +1,7 @@
 package search
 
 import (
+	"errors"
 	"net/http"
 	"strings"
 
@@ -48,7 +49,16 @@ func (engine YoutubeEngine) Search(q string, countryCode string) ([]track.ID, er
 }
 
 // Detail returns the detail for the list of track from a list of youtube ids
-func (engine YoutubeEngine) Detail(ids []string) ([]track.Track, error) {
+func (engine YoutubeEngine) Detail(ids []track.ID) ([]track.Track, error) {
+	// if any of the id requested has an invalid source, return an error
+	stringIds := []string{}
+	for _, element := range ids {
+		if element.Source != sourceName {
+			return nil, errors.New("Invalid source required")
+		}
+		stringIds = append(stringIds, element.ID)
+	}
+
 	client := &http.Client{Transport: &transport.APIKey{Key: developerKey}}
 	service, err := youtube.New(client)
 	if err != nil {
@@ -56,7 +66,7 @@ func (engine YoutubeEngine) Detail(ids []string) ([]track.Track, error) {
 	}
 
 	call := service.Videos.List("snippet,contentDetails").
-		Id(strings.Join(ids[:], ","))
+		Id(strings.Join(stringIds, ","))
 
 	response, err := call.Do()
 	if err != nil {
@@ -65,8 +75,7 @@ func (engine YoutubeEngine) Detail(ids []string) ([]track.Track, error) {
 
 	tracks := []track.Track{}
 	for index, item := range response.Items {
-		trackID := track.ID{ID: ids[index], Source: sourceName}
-		track := track.Track{ID: trackID, Title: item.Snippet.Title, Duration: item.ContentDetails.Duration}
+		track := track.Track{ID: ids[index], Title: item.Snippet.Title, Duration: item.ContentDetails.Duration}
 		tracks = append(tracks, track)
 	}
 	return tracks, nil
