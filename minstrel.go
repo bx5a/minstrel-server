@@ -49,7 +49,7 @@ func (minstrel *Minstrel) GetTracks(writer http.ResponseWriter, r *http.Request)
 
 // Search writes a json array of TrackID to the writer
 func (minstrel *Minstrel) Search(writer http.ResponseWriter, q string) {
-	ids, err := search.Search(minstrel.searchEngine, q, "FR")
+	ids, err := search.Search(minstrel.searchEngine, q, "US")
 	if err != nil {
 		log.Fatal(err)
 	}
