@@ -1,5 +1,8 @@
 language: go
 
+go:
+    - 1.6.2
+
 script:
     - sed "s/%% paste your developer key %%/$YoutubeAPIDeveloperKey/g" search/conf.go > tmp
     - mv tmp search/conf.go
