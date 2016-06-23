@@ -11,10 +11,6 @@ import (
 	"google.golang.org/api/youtube/v3"
 )
 
-// TODO: paste your api key here
-const developerKey = "AIzaSyAOdGv1-HH3nNPsn-EBzFSpSO5IcTkKtMI"
-const sourceName = "YouTube"
-
 /*
 YoutubeEngine is the EngineInterface implementation for youtube
 */
@@ -23,7 +19,7 @@ type YoutubeEngine struct {
 
 // Search is an inherited function from EngineInterface
 func (engine YoutubeEngine) Search(q string, countryCode string) ([]track.ID, error) {
-	client := &http.Client{Transport: &transport.APIKey{Key: developerKey}}
+	client := &http.Client{Transport: &transport.APIKey{Key: youtubeEngineDeveloperKey}}
 	service, err := youtube.New(client)
 	if err != nil {
 		return nil, err
@@ -43,7 +39,7 @@ func (engine YoutubeEngine) Search(q string, countryCode string) ([]track.ID, er
 	// Iterate through each item and add it to the list
 	ids := []track.ID{}
 	for _, item := range response.Items {
-		ids = append(ids, track.ID{ID: item.Id.VideoId, Source: sourceName})
+		ids = append(ids, track.ID{ID: item.Id.VideoId, Source: youtubeEngineSourceName})
 	}
 	return ids, nil
 }
@@ -53,13 +49,13 @@ func (engine YoutubeEngine) Detail(ids []track.ID) ([]track.Track, error) {
 	// if any of the id requested has an invalid source, return an error
 	stringIds := []string{}
 	for _, element := range ids {
-		if element.Source != sourceName {
+		if element.Source != youtubeEngineSourceName {
 			return nil, errors.New("Invalid source required")
 		}
 		stringIds = append(stringIds, element.ID)
 	}
 
-	client := &http.Client{Transport: &transport.APIKey{Key: developerKey}}
+	client := &http.Client{Transport: &transport.APIKey{Key: youtubeEngineDeveloperKey}}
 	service, err := youtube.New(client)
 	if err != nil {
 		return nil, err

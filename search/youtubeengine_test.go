@@ -18,8 +18,8 @@ func TestYoutubeEngine_Search(t *testing.T) {
 		return
 	}
 
-	if ids[0].Source != sourceName {
-		t.Errorf("ids[0].Source == %s, want %s", ids[0].Source, sourceName)
+	if ids[0].Source != youtubeEngineSourceName {
+		t.Errorf("ids[0].Source == %s, want %s", ids[0].Source, youtubeEngineSourceName)
 	}
 	expectedID := "fk4BbF7B29w"
 	if ids[0].ID != expectedID {
@@ -29,8 +29,8 @@ func TestYoutubeEngine_Search(t *testing.T) {
 
 func TestYoutubeEngine_Detail(t *testing.T) {
 	searchEngine := YoutubeEngine{}
-	adeleFirstTrack := track.ID{ID: "fk4BbF7B29w", Source: sourceName}
-	adeleSecondTrack := track.ID{ID: "YQHsXMglC9A", Source: sourceName}
+	adeleFirstTrack := track.ID{ID: "fk4BbF7B29w", Source: youtubeEngineSourceName}
+	adeleSecondTrack := track.ID{ID: "YQHsXMglC9A", Source: youtubeEngineSourceName}
 	ids := []track.ID{adeleFirstTrack, adeleSecondTrack}
 	tracks, err := searchEngine.Detail(ids)
 	if err != nil {
