@@ -16,5 +16,5 @@ script:
 
 
 after_success:
-    - sshpass -e scp minstrel-server $MinstrelDeployServerUserName@$MinstrelDeployServerHost:~
-    - sshpass -e ssh $MinstrelDeployServerUserName@$MinstrelDeployServerHost ./minstrel-server&
+    - sshpass -e scp -o StrictHostKeychecking=no minstrel-server $MinstrelDeployServerUserName@$MinstrelDeployServerHost:~
+    - sshpass -e ssh -o StrictHostKeychecking=no $MinstrelDeployServerUserName@$MinstrelDeployServerHost ./minstrel-server&
