@@ -55,6 +55,7 @@ func (minstrel *Minstrel) Search(writer http.ResponseWriter, q string) {
 	}
 
 	writer.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	writer.Header().Set("Access-Control-Allow-Origin", "*")
 	writer.WriteHeader(http.StatusOK)
 	err2 := json.NewEncoder(writer).Encode(ids)
 	if err2 != nil {
@@ -70,6 +71,7 @@ func (minstrel *Minstrel) Detail(writer http.ResponseWriter, ids []track.ID) {
 	}
 
 	writer.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	writer.Header().Set("Access-Control-Allow-Origin", "*")
 	writer.WriteHeader(http.StatusOK)
 	err2 := json.NewEncoder(writer).Encode(tracks)
 	if err2 != nil {
