@@ -71,7 +71,15 @@ func (engine YoutubeEngine) Detail(ids []track.ID) ([]track.Track, error) {
 
 	tracks := []track.Track{}
 	for index, item := range response.Items {
-		track := track.Track{ID: ids[index], Title: item.Snippet.Title, Duration: item.ContentDetails.Duration}
+		track := track.Track{
+			ID:       ids[index],
+			Title:    item.Snippet.Title,
+			Duration: item.ContentDetails.Duration,
+			Thumbnail: track.Thumbnail{
+				Default: item.Snippet.Thumbnails.Default.Url,
+				High:    item.Snippet.Thumbnails.High.Url,
+			},
+		}
 		tracks = append(tracks, track)
 	}
 	return tracks, nil

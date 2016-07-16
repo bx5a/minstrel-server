@@ -54,4 +54,8 @@ func TestYoutubeEngine_Detail(t *testing.T) {
 	if tracks[0].Title != expectedTitle {
 		t.Errorf("tracks[0].Title == %s, want %s", tracks[0].Title, expectedTitle)
 	}
+
+	if tracks[0].Thumbnail.Default == "" {
+		t.Errorf("Thumnail default url empty")
+	}
 }
