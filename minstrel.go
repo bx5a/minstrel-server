@@ -20,8 +20,10 @@ type Minstrel struct {
 // GetTrackIDs search for tracks
 func (minstrel *Minstrel) GetTrackIDs(writer http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query().Get("q")
+	// get page token. If none, an empty string is set
+	pageToken := r.URL.Query().Get("pageToken")
 	if len(q) != 0 {
-		minstrel.Search(writer, q)
+		minstrel.Search(writer, q, pageToken)
 		return
 	}
 	http.Error(writer, "Invalid request", http.StatusBadRequest)
@@ -48,16 +50,15 @@ func (minstrel *Minstrel) GetTracks(writer http.ResponseWriter, r *http.Request)
 }
 
 // Search writes a json array of TrackID to the writer
-func (minstrel *Minstrel) Search(writer http.ResponseWriter, q string) {
-	ids, err := search.Search(minstrel.searchEngine, q, "US")
+func (minstrel *Minstrel) Search(writer http.ResponseWriter, q string, pageToken string) {
+	idList, err := search.Search(minstrel.searchEngine, q, "US", pageToken)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	writer.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	writer.Header().Set("Access-Control-Allow-Origin", "*")
+	writer.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	writer.WriteHeader(http.StatusOK)
-	err2 := json.NewEncoder(writer).Encode(ids)
+	err2 := json.NewEncoder(writer).Encode(idList)
 	if err2 != nil {
 		log.Fatal(err)
 	}
@@ -69,9 +70,8 @@ func (minstrel *Minstrel) Detail(writer http.ResponseWriter, ids []track.ID) {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	writer.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	writer.Header().Set("Access-Control-Allow-Origin", "*")
+	writer.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	writer.WriteHeader(http.StatusOK)
 	err2 := json.NewEncoder(writer).Encode(tracks)
 	if err2 != nil {

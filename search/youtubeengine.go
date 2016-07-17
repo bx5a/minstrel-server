@@ -18,22 +18,23 @@ type YoutubeEngine struct {
 }
 
 // Search is an inherited function from EngineInterface
-func (engine YoutubeEngine) Search(q string, countryCode string) ([]track.ID, error) {
+func (engine YoutubeEngine) Search(q string, countryCode string, pageToken string) (track.IDList, error) {
+	idList := track.IDList{IDs: nil, NextPageToken: ""}
 	client := &http.Client{Transport: &transport.APIKey{Key: youtubeEngineDeveloperKey}}
 	service, err := youtube.New(client)
 	if err != nil {
-		return nil, err
+		return idList, err
 	}
 
 	call := service.Search.List("id").
 		Q(q).
 		RegionCode(countryCode).
 		Type("video").
-		MaxResults(50)
+		PageToken(pageToken)
 
 	response, err := call.Do()
 	if err != nil {
-		return nil, err
+		return idList, err
 	}
 
 	// Iterate through each item and add it to the list
@@ -41,7 +42,10 @@ func (engine YoutubeEngine) Search(q string, countryCode string) ([]track.ID, er
 	for _, item := range response.Items {
 		ids = append(ids, track.ID{ID: item.Id.VideoId, Source: youtubeEngineSourceName})
 	}
-	return ids, nil
+
+	idList.IDs = ids
+	idList.NextPageToken = response.NextPageToken
+	return idList, nil
 }
 
 // Detail returns the detail for the list of track from a list of youtube ids

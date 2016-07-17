@@ -8,9 +8,16 @@ import (
 
 func TestYoutubeEngine_Search(t *testing.T) {
 	searchEngine := YoutubeEngine{}
-	ids, err := searchEngine.Search("adele", "US")
+	idList, err := searchEngine.Search("adele", "US", "")
 	if err != nil {
 		t.Fatal(err)
+	}
+	ids := idList.IDs
+	if len(ids) == 0 {
+		t.Errorf("Obtained ID array is empty")
+	}
+	if idList.NextPageToken == "" {
+		t.Errorf("Invalid next page token")
 	}
 
 	if testing.Short() {
