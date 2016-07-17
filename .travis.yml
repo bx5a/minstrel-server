@@ -16,5 +16,6 @@ script:
 
 
 after_success:
+    - sshpass -e ssh -o StrictHostKeychecking=no $MinstrelDeployServerUserName@$MinstrelDeployServerHost 'killall minstrel-server; rm -rf minstrel-server'
     - sshpass -e scp -o StrictHostKeychecking=no minstrel-server $MinstrelDeployServerUserName@$MinstrelDeployServerHost:~
-    - sshpass -e ssh -o StrictHostKeychecking=no $MinstrelDeployServerUserName@$MinstrelDeployServerHost 'killall minstrel-server;nohup ./minstrel-server >> minstrel.log 2>&1 &'
+    - sshpass -e ssh -o StrictHostKeychecking=no $MinstrelDeployServerUserName@$MinstrelDeployServerHost 'nohup ./minstrel-server >> minstrel.log 2>&1 &'
