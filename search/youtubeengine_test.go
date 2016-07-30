@@ -65,4 +65,9 @@ func TestYoutubeEngine_Detail(t *testing.T) {
 	if tracks[0].Thumbnail.Default == "" {
 		t.Errorf("Thumnail default url empty")
 	}
+
+	expectedDuration := "226000"
+	if tracks[0].Duration != expectedDuration {
+		t.Errorf("Unexpected duration: %s, want %s", tracks[0].Duration, expectedDuration)
+	}
 }
