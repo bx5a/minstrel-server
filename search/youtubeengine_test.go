@@ -7,7 +7,7 @@ import (
 )
 
 func TestYoutubeEngine_Search(t *testing.T) {
-	searchEngine := YoutubeEngine{}
+	searchEngine := MakeYoutubeEngine()
 	idList, err := searchEngine.Search("adele", "US", "")
 	if err != nil {
 		t.Fatal(err)
@@ -35,7 +35,7 @@ func TestYoutubeEngine_Search(t *testing.T) {
 }
 
 func TestYoutubeEngine_Detail(t *testing.T) {
-	searchEngine := YoutubeEngine{}
+	searchEngine := MakeYoutubeEngine()
 	adeleFirstTrack := track.ID{ID: "fk4BbF7B29w", Source: youtubeEngineSourceName}
 	adeleSecondTrack := track.ID{ID: "YQHsXMglC9A", Source: youtubeEngineSourceName}
 	ids := []track.ID{adeleFirstTrack, adeleSecondTrack}
@@ -69,5 +69,16 @@ func TestYoutubeEngine_Detail(t *testing.T) {
 	expectedDuration := "226000"
 	if tracks[0].Duration != expectedDuration {
 		t.Errorf("Unexpected duration: %s, want %s", tracks[0].Duration, expectedDuration)
+	}
+}
+
+func TestYoutubeEngine_Category(t *testing.T) {
+	searchEngine := MakeYoutubeEngine()
+	ID, err := searchEngine.queryMusicCategoryID()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if ID == "" {
+		t.Errorf("Obtained ID is empty")
 	}
 }

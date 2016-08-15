@@ -9,7 +9,8 @@ import (
 )
 
 func main() {
-	minstrel := &Minstrel{searchEngine: search.YoutubeEngine{}}
+	engine := search.MakeYoutubeEngine()
+	minstrel := &Minstrel{searchEngine: engine}
 	r := mux.NewRouter()
 
 	r.Methods("GET").Path("/v1/TrackIDs").HandlerFunc(minstrel.GetTrackIDs)

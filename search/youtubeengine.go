@@ -17,13 +17,59 @@ import (
 YoutubeEngine is the EngineInterface implementation for youtube
 */
 type YoutubeEngine struct {
+	httpClient      *http.Client
+	musicCategoryID string
+}
+
+// MakeYoutubeEngine builds a YouTube search engine. constructor pattern
+func MakeYoutubeEngine() YoutubeEngine {
+	client := &http.Client{Transport: &transport.APIKey{Key: youtubeEngineDeveloperKey}}
+	return YoutubeEngine{httpClient: client, musicCategoryID: ""}
+}
+
+// musicCategoryId returns the YouTube id of the music category
+func (engine YoutubeEngine) queryMusicCategoryID() (string, error) {
+	service, err := youtube.New(engine.httpClient)
+	if err != nil {
+		return "", err
+	}
+
+	// TODO: Region code shouldn't always be US. It's not a problem in that case because
+	// we query the music category but can be a problem in other calls
+	call := service.VideoCategories.List("id,snippet").
+		RegionCode("US").
+		Fields("items(id,snippet/title)")
+	response, err := call.Do()
+
+	if err != nil {
+		return "", err
+	}
+
+	for _, item := range response.Items {
+		// TODO: make it a constant
+		if item.Snippet.Title == "Music" {
+			return item.Id, nil
+		}
+	}
+	return "", errors.New("Music ID couldn't be found")
+}
+
+// getMusicCategoryID initialize and return the music category ID
+func (engine YoutubeEngine) getMusicCategoryID() string {
+	if engine.musicCategoryID == "" {
+		ID, err := engine.queryMusicCategoryID()
+		if err != nil {
+			return ""
+		}
+		engine.musicCategoryID = ID
+	}
+	return engine.musicCategoryID
 }
 
 // Search is an inherited function from EngineInterface
 func (engine YoutubeEngine) Search(q string, countryCode string, pageToken string) (track.IDList, error) {
 	idList := track.IDList{IDs: nil, NextPageToken: ""}
-	client := &http.Client{Transport: &transport.APIKey{Key: youtubeEngineDeveloperKey}}
-	service, err := youtube.New(client)
+	service, err := youtube.New(engine.httpClient)
 	if err != nil {
 		return idList, err
 	}
@@ -31,6 +77,7 @@ func (engine YoutubeEngine) Search(q string, countryCode string, pageToken strin
 	call := service.Search.List("id").
 		Q(q).
 		RegionCode(countryCode).
+		VideoCategoryId(engine.getMusicCategoryID()).
 		Type("video").
 		PageToken(pageToken)
 
@@ -83,8 +130,7 @@ func (engine YoutubeEngine) Detail(ids []track.ID) ([]track.Track, error) {
 		stringIds = append(stringIds, element.ID)
 	}
 
-	client := &http.Client{Transport: &transport.APIKey{Key: youtubeEngineDeveloperKey}}
-	service, err := youtube.New(client)
+	service, err := youtube.New(engine.httpClient)
 	if err != nil {
 		return nil, err
 	}
