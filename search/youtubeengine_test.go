@@ -28,7 +28,7 @@ func TestYoutubeEngine_Search(t *testing.T) {
 	if ids[0].Source != youtubeEngineSourceName {
 		t.Errorf("ids[0].Source == %s, want %s", ids[0].Source, youtubeEngineSourceName)
 	}
-	expectedID := "fk4BbF7B29w"
+	expectedID := "nufFvjKPNI4"
 	if ids[0].ID != expectedID {
 		t.Errorf("ids[0].ID == %s, want %s", ids[0].ID, expectedID)
 	}

@@ -79,6 +79,8 @@ func (engine YoutubeEngine) Search(q string, countryCode string, pageToken strin
 		RegionCode(countryCode).
 		VideoCategoryId(engine.getMusicCategoryID()).
 		Type("video").
+		// only video that can be played outside youtube.com
+		VideoSyndicated("true").
 		PageToken(pageToken)
 
 	response, err := call.Do()
